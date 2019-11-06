@@ -1,7 +1,7 @@
 """файл с классом CinemaParser"""
-from bs4 import BeautifulSoup
-import requests
 import time
+import requests
+from bs4 import BeautifulSoup
 
 class CinemaParser:
     """ Класс нужен для оперирования с сайтом https://msk.subscity.ru/ """
@@ -44,7 +44,7 @@ class CinemaParser:
             if i.text.replace('­', '') == film_name:
                 print(1)
                 link = i['href']
-        link = 'https://msk.subscity.ru'+link
+        link = 'https://msk.subscity.ru' + link
         return link
 
     def get_first_session(self, film_name):
@@ -52,6 +52,19 @@ class CinemaParser:
         if not self.content:
             self.extract_raw_content()
         for i in self.content.find_all('div', class_="movie-plate"):
-            if i['attr-title']==film_name:
-                return time.ctime(int(i['attr-next-screening']))
+            if i['attr-title'] == film_name:
+                next_session_time = i['attr-next-screening']
+                next_session_time_translation = time.ctime(int(i['attr-next-screening']))
+                div_with_href = (i.find('div', class_='text-center movie-poster-mobile'))
+                a_with_href = div_with_href.find('a')['href']
+                link = self.url + a_with_href
 
+        new_page = requests.get(link)
+        page_film = BeautifulSoup(new_page.text, "html.parser")
+
+        for first_table in page_film.find_all('table', class_='table table-bordered table-condensed table-curved table-striped table-no-inside-borders'):
+            table = first_table.find('td', class_="text-center cell-screenings")
+            if table['attr-time'] == next_session_time:
+                name_film = first_table.find('a', class_="underdashed").get_text()
+
+        return name_film, next_session_time_translation
