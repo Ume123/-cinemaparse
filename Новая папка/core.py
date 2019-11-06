@@ -62,9 +62,10 @@ class CinemaParser:
         new_page = requests.get(link)
         page_film = BeautifulSoup(new_page.text, "html.parser")
 
-        for first_table in page_film.find_all('table', class_='table table-bordered table-condensed table-curved table-striped table-no-inside-borders'):
-            table = first_table.find('td', class_="text-center cell-screenings")
-            if table['attr-time'] == next_session_time:
+        for first_table in page_film.find_all('tr', class_="row-entity"):
+            table_with_time = first_table.find('td', class_='text-center cell-screenings')
+            if table_with_time['attr-time'] == next_session_time:
                 name_film = first_table.find('a', class_="underdashed").get_text()
 
         return name_film, next_session_time_translation
+        
