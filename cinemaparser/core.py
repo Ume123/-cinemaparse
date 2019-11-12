@@ -36,18 +36,6 @@ class CinemaParser:
             list_films.append(i.text)
         return list_films
 
-    def dssddssd(self, film_name):
-        """Функция ищет ссылку на фильм по его названию и выводит ближайщий"""
-        link = ''
-        if not self.content:
-            self.extract_raw_content()
-        for i in self.content.find_all('a', class_="underdashed"):
-            if i.text.replace('­', '') == film_name:
-                print(1)
-                link = i['href']
-        link = 'https://msk.subscity.ru' + link
-        return link
-
     def get_first_session(self, film_name):
         """Функция ищет ссылку на фильм по его названию и выводит ближайщий сеанс и кинотеатр"""
         if not self.content:
@@ -105,3 +93,16 @@ class CinemaParser:
 
         return (name_cinema, soonest_plate['attr-title'], time.ctime(int(storted_times[0])))
 
+    def get_nearest_subway_station(self, cinema):
+        """Функция используется для поиска"""
+        page = requests.get('https://msk.subscity.ru/cinemas')
+        content_cinema = BeautifulSoup(page.text, "html.parser")
+        for first_table in content_cinema.find_all('td', class_="name col-sm-4 col-xs-12"):
+            tag_a = first_table.find('a', class_='underdashed').get_text()
+            if tag_a == cinema:
+                nearest_station = first_table.find('span', class_="medium-font location").get_text()
+
+        return nearest_station[3::].split(', ')
+        
+CINEMAPARSER = CinemaParser()
+print(CINEMAPARSER.get_nearest_subway_station('5 звезд на Новокузнецкой'))
